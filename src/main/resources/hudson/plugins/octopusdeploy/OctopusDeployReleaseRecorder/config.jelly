@@ -2,6 +2,10 @@
   <f:entry title="Project Name" field="project">
     <f:combobox />
   </f:entry>
+
+  <f:entry title="Channel Name" field="channel">
+    <f:combobox />
+  </f:entry>
   
   <f:entry title="Release Version" field="releaseVersion">
     <f:textbox />

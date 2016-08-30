@@ -34,7 +34,7 @@ public class OctopusApi {
      * @throws java.io.IOException
      */
     public String createRelease(String project, String releaseVersion, String releaseNotes) throws IOException {
-        return createRelease(project, releaseVersion, releaseNotes, null);
+        return createRelease(project, releaseVersion, null, releaseNotes, null);
     }
     
     /**
@@ -46,9 +46,14 @@ public class OctopusApi {
      * @return content from the API post
      * @throws java.io.IOException
      */
-    public String createRelease(String project, String releaseVersion, String releaseNotes, Set<SelectedPackage> selectedPackages) throws IOException {
+    public String createRelease(String project, String releaseVersion, String channel, String releaseNotes, Set<SelectedPackage> selectedPackages) throws IOException {
         StringBuilder jsonBuilder = new StringBuilder();
         jsonBuilder.append(String.format("{ProjectId:\"%s\",Version:\"%s\"", project, releaseVersion));
+
+        if(channel != null && !channel.isEmpty()) {
+            jsonBuilder.append(String.format(",ChannelId:\"%s\"", channel));
+        }
+
         if (releaseNotes != null && !releaseNotes.isEmpty()) {
             jsonBuilder.append(String.format(",ReleaseNotes:\"%s\"", releaseNotes));
         }
@@ -284,6 +289,30 @@ public class OctopusApi {
             releases.add(new Release(id, projectId, ReleaseNotes, version));
         }
         return releases;
+    }
+
+    /**
+     * Get all channels for a given project from the Octopus server;
+     * @param projectId
+     * @return A set of all channels for a given project
+     * @throws IllegalArgumentException
+     * @throws IOException
+     */
+    public Set<Channel> getChannelsForProject(String projectId) throws IllegalArgumentException, IOException {
+        HashSet<Channel> channels = new HashSet<Channel>();
+        AuthenticatedWebClient.WebResponse response = webClient.get("api/projects/" + projectId + "/channels");
+        if (response.isErrorCode()) {
+            throw new IOException(String.format("Code %s - %n%s", response.getCode(), response.getContent()));
+        }
+        JSONObject json = (JSONObject) JSONSerializer.toJSON(response.getContent());
+        for (Object obj : json.getJSONArray("Items")) {
+            JSONObject jsonObj = (JSONObject) obj;
+            String id = jsonObj.getString("Id");
+            String name = jsonObj.getString("Name");
+            String description = jsonObj.getString("Description");
+            channels.add(new Channel(id, projectId, name, description));
+        }
+        return channels;
     }
     
     /**

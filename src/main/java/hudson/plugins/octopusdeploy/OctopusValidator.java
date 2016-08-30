@@ -114,6 +114,33 @@ public class OctopusValidator {
         }
         return FormValidation.ok();
     }
+
+    public FormValidation validateChannel(String channelName, String projectId) {
+        if (channelName.isEmpty()) {
+            return FormValidation.ok();
+            //return FormValidation.error("Please provide a channel name.");
+        }
+
+        try {
+            Set<Channel> channels = api.getChannelsForProject(projectId);
+            boolean found = false;
+            for (Channel channel : channels) {
+                if (channelName.equals(channel.getName())) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                return FormValidation.error("channel %s doesn't exist for project %s!", channelName, projectId);
+            }
+        } catch (IllegalArgumentException ex) {
+            return FormValidation.error(ex.getMessage());
+        } catch (IOException ex) {
+            return FormValidation.error(ex.getMessage());
+        }
+        return FormValidation.ok();
+    }
     
     /**
      * Whether or not a release must exist or must not exist depending on the operation being done.
