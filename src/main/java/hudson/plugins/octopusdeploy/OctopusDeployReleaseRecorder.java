@@ -261,7 +261,7 @@ public class OctopusDeployReleaseRecorder extends Recorder implements Serializab
         }
 
         Set<SelectedPackage> selectedPackages = null;
-        List<PackageConfiguration> combinedPackageConfigs = getCombinedPackageList(p.getId(), packageConfigs, defaultPackageVersion, log);
+        List<PackageConfiguration> combinedPackageConfigs = getCombinedPackageList(p.getId(), channelId, packageConfigs, defaultPackageVersion, log);
         if (combinedPackageConfigs != null && !combinedPackageConfigs.isEmpty()) {
             selectedPackages = new HashSet<SelectedPackage>();
             for (PackageConfiguration pc : combinedPackageConfigs) {
@@ -336,14 +336,15 @@ public class OctopusDeployReleaseRecorder extends Recorder implements Serializab
     /**
      * Gets a package list that is a combination of the default packages (taken from the Octopus template)
      * and the packages selected. Selected package version overwrite the default package version for a given package
-     * @param projectId
-     * @param selectedPackages
-     * @param defaultPackageVersion
+     * @param projectId string
+     * @param channelId string
+     * @param selectedPackages List<PackageConfiguration>
+     * @param defaultPackageVersion string
      * @return A list that combines the default packages and selected packages
      * @throws IllegalArgumentException
      * @throws IOException
      */
-    private List<PackageConfiguration> getCombinedPackageList(String projectId, List<PackageConfiguration> selectedPackages,
+    private List<PackageConfiguration> getCombinedPackageList(String projectId, String channelId, List<PackageConfiguration> selectedPackages,
             String defaultPackageVersion, Log log)
     {
         List<PackageConfiguration> combinedList = new ArrayList<PackageConfiguration>();
@@ -361,7 +362,7 @@ public class OctopusDeployReleaseRecorder extends Recorder implements Serializab
         DeploymentProcessTemplate defaultPackages = null;
         //If not default version specified, ignore all default packages
         try {
-            defaultPackages = this.getDescriptorImpl().api.getDeploymentProcessTemplateForProject(projectId);
+            defaultPackages = this.getDescriptorImpl().api.getDeploymentProcessTemplateForProject(projectId, channelId);
         } catch (Exception ex) {
             //Default package retrieval unsuccessful
             log.info(String.format("Could not retrieve default package list for project id: %s. No default packages will be used", projectId));

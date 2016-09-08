@@ -366,7 +366,26 @@ public class OctopusApi {
      * @throws IOException 
      */
     public DeploymentProcessTemplate getDeploymentProcessTemplateForProject(String projectId) throws IllegalArgumentException, IOException {
-        AuthenticatedWebClient.WebResponse response = webClient.get("api/deploymentprocesses/deploymentprocess-" + projectId + "/template");
+        return getDeploymentProcessTemplateForProject(projectId, null);
+    }
+
+    /**
+     *
+     * @param projectId
+     * @param channelId
+     * @return DeploymentProcessTemplate
+     * @throws IllegalArgumentException
+     * @throws IOException
+     */
+    public DeploymentProcessTemplate getDeploymentProcessTemplateForProject(String projectId, String channelId) throws IllegalArgumentException, IOException {
+        AuthenticatedWebClient.WebResponse response;
+        if (channelId != null && !channelId.isEmpty()) {
+            // e.g. https://octopus.com/api/deploymentprocesses/deploymentprocess-Projects-283/template?channel=Channels-302
+            response = webClient.get("api/deploymentprocesses/deploymentprocess-" + projectId + "/template?channel=" + channelId);
+        } else {
+            response = webClient.get("api/deploymentprocesses/deploymentprocess-" + projectId + "/template");
+        }
+
         if (response.isErrorCode()) {
             throw new IOException(String.format("Code %s - %n%s", response.getCode(), response.getContent()));
         }
